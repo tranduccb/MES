@@ -1,0 +1,68 @@
+<div id="workspace" class=" container-fluid height_95 ">
+   <div class=" container-fluid" id="map">
+   </div>
+   <nav id="sidebar22">
+        <div class="sidebar_blog_4">
+            <li class="active" >
+                <a href="#list-Map" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle border p-2 rounded"> <span> <h4> Bản đồ </h4></span></a>
+                <ul class="collapse list-unstyled" id="list-Map">
+                    <li class="active" id="tabMap">
+                        <a href="#map3" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle border p-2 rounded"><i class="fa fa-map green_color"></i> <span>Map3</span></a>
+                        <ul class="collapse list-unstyled" id="map3" >
+                            <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Thuộc tính</button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Xóa</button>
+                        </ul>
+                        <a href="#mapA" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle border p-2 rounded"><i class="fa fa-map green_color"></i> <span>MapA</span></a>
+                        <ul class="collapse list-unstyled" id="mapA" >
+                            <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Thuộc tính</button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Xóa</button>
+                        </ul>
+                        <a href="#mapB" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle border p-2 rounded"><i class="fa fa-map green_color"></i> <span>MapB</span></a>
+                        <ul class="collapse list-unstyled" id="mapB" >
+                            <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Thuộc tính</button>
+                            <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Xóa</button>
+                        </ul>
+                    </li>
+                    <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Tải lên</button>
+                </ul>
+            </li>
+            <li class="active">
+                <a href="#Map-propeties" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"> <span> <h4> Cài đặt bản đồ </h4></span></a>
+                <ul class="collapse list-unstyled" id="Map-propeties">
+                    <span><h1>Gốc 0: </h1> <input type="text"></span>
+                    <span><h1>Hệ số: </h1> <input type="text"></span>
+                    <span>
+                        <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Áp dụng</button>
+                        <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Lưu lại</button>
+                        <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Lấy thông tin</button>
+                    </span>
+                </ul>
+            </li>
+      </div>
+   </nav>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/leaflet.rotatedMarker.js"></script>
+<script type="text/javascript" >
+    var img = new Image();
+    var socket = io(window.location.origin)
+    var agvMarkers = [];
+    var map = L.map('map', {
+      crs: L.CRS.Simple,
+      minZoom: -2 // Điều chỉnh mức độ thu nhỏ tối thiểu nếu cần
+   });
+    
+   // Tính toán tỷ lệ bản đồ và thiết lập kích thước ảnh
+   var bounds,scaler,customLatLng;
+   var customMarkerCoords;
+   // Định nghĩa biểu tượng tùy chỉnh
+   var customIcon = L.icon({
+      iconUrl: 'img/point.png', // Đường dẫn đến hình ảnh biểu tượng
+      iconSize: [38, 38], // Kích thước của biểu tượng, ví dụ: [width, height]
+      iconAnchor: [19, 38], // Điểm neo của biểu tượng, thường là nằm ở giữa dưới của biểu tượng
+      popupAnchor: [0, -38] // Điểm neo của cửa sổ pop-up, thường là ở giữa trên của biểu tượng
+   });
+
+    socket.emit('Listmap')
+    //socket.on('Map',function(data){})
+</script>

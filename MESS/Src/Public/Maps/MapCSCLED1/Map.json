@@ -1,0 +1,133 @@
+[
+    {
+      "ID": 1,
+      "Position": "64594.1,20155.1",
+      "jog": "Trạm đỗ xe",
+      "Next": [2]
+    },
+    {
+      "ID": 2,
+      "Position": "63792.1,20158.5",
+      "jog": "điểm dừng",
+      "Next":[3],
+      "Back":[1]
+
+    },
+    {
+        "ID": 3,
+        "Position": "60476.1,20922.9",
+        "jog": "điểm nhận hàng",
+        "Next":[4],
+        "Back":[2]
+    },
+    {
+        "ID": 4,
+        "Position": "49650.4,20930.3",
+        "jog": "điểm dừng",
+        "Next": [5],
+        "Back": [3]
+    },
+    {
+        "ID": 5,
+        "Position": "46918.3,20946.5",
+        "jog": "điểm dừng",
+        "Next": [6],
+        "Back":[4]
+    },
+    {
+        "ID": 6,
+        "Position": "38001.2,20946.1",
+        "jog": "điểm dừng",
+        "Next":[7],
+        "Back":[5]
+    },
+    {
+        "ID": 7,
+        "Position": "33492.0,20946.1",
+        "jog": "điểm dừng",
+        "Next": [8],
+        "Back":[6]
+    },
+    {
+        "ID": 8,
+        "Position": "11371.3,20995.6",
+        "jog": "điểm dừng",
+        "Next": [9,11],
+        "Back": [7]
+    },
+    {
+        "ID": 9,
+        "Position": "10100.7,19343.9",
+        "jog": "điểm giao hàng",
+        "Next": [10],
+        "Back":[8]
+    },
+    {
+        "ID": 10,
+        "Position": "10132.5,8830.2",
+        "jog": "điểm giao hàng",
+        "Next": [18],
+        "Back":[9]
+    },
+    {
+        "ID": 11,
+        "Position": "-571.7,21027.3",
+        "jog": "điểm dừng",
+        "Next": [12,16],
+        "Back":[8]
+    },
+    {
+        "ID": 12,
+        "Position": "-1905.8,19375.6",
+        "jog": "điểm giao hàng",
+        "Next": [13]
+    },
+    {
+        "ID": 13,
+        "Position": "-1842.3,14611.1",
+        "jog": "điểm giao hàng",
+        "Next": [14]
+    },
+    {
+        "ID": 14,
+        "Position": "-1397.6,9402.0",
+        "jog": "điểm giao hàng",
+        "Next": [15]
+    },
+    {
+        "ID": 15,
+        "Position": "-1492.9,5209.2",
+        "jog": "điểm giao hàng",
+        "Next": [21]
+    },
+    {
+        "ID": 16,
+        "Position": "-8124.8,20995.7",
+        "jog": "trạm sạc",
+        "Back":[11]
+    },
+    {
+        "ID": 17,
+        "Position": "8842.6,106.5",
+        "jog": "điểm giao hàng",
+        "Next": [18]
+    },
+    {
+        "ID": 18,
+        "Position": "10831.3,2627.9",
+        "jog": "điểm giao hàng",
+        "Back":[10]
+    },
+    {
+        "ID": 20,
+        "Position": "-336.5,90.9",
+        "jog": "điểm giao hàng",
+        "Next":[17]
+    },
+    {
+        "ID": 21,
+        "Position": "-1500.7,1364.2",
+        "jog": "điểm giao hàng",
+        "Next":[20]
+    }
+]

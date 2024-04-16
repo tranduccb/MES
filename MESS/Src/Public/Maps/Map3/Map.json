@@ -1,0 +1,38 @@
+[
+  {
+    "ID": 1,
+    "Position": "82.7,593.7",
+    "jog":"điểm dừng",
+    "Next": [2]
+  },
+  {
+    "ID": 2,
+    "Position": "4674.1,579.0",
+    "jog":"điểm dừng",
+    "Next":[3,5]
+  },
+  {
+    "ID": 3,
+    "Position": "6115.0,-268.4",
+    "jog":"điểm dừng",
+    "Next":[4,5]
+  },
+  {
+    "ID": 4,
+    "Position": "6129.8,-1744.3",
+    "jog": "điểm dừng",
+    "Next":[5]
+  },
+  {
+    "ID": 5,
+    "Position": "4661.2,-569.8",
+    "jog": "điểm dừng",
+    "Next":[6]
+  },
+  {
+    "ID": 6,
+    "Position": "75.4,-531.2",
+    "jog": "điểm dừng",
+    "Next":[1]
+  }
+]

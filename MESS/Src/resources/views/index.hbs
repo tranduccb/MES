@@ -1,0 +1,396 @@
+<div id="workspace" class=" container-fluid height_95 ">
+   <div class=" container-fluid" id="map">
+   </div>
+   <nav id="sidebar22">
+      <div class="sidebar_blog_4">
+         <li class="active" >
+            <a href="#agv" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"> <span> <h4> Thông Tin AGV </h4></span></a>
+            <ul class="collapse list-unstyled" id="agv">
+               <li class="active" id="tabAGV">
+               </li>
+            </ul>
+         </li>
+         <li class="active">
+            <a href="#robot" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"> <span> <h4> Thông Tin ROBOT </h4></span></a>
+            <ul class="collapse list-unstyled" id="robot">
+               <li class="active" id="tabRobot">
+                  <a href="#robot1" data-toggle="collapse" aria-expanded="false" class="dropdown-toggle"><i class="fa fa-car green_color"></i> <span>ROBOT 1</span></a>
+                  <ul class="collapse list-unstyled" id="robot1">
+                     <h1>Trạng Thái: Bình thường</h1>
+                     <h1>Pin: 100%</h1>
+                     <h1>Vị trí: (50:50)</h1>
+                     <h1>Nhiệm Vụ: đi nhận</h1>
+                     <h1>Hoạt động: đang di chuyển</h1>
+                     <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Vị Trí Hiện Tại</button>
+                     <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Quay Về</button>
+                     <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Sạc</button>
+                     <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Nhiệm vụ mới</button>
+                     <button type="button" class="btn btn-primary btn-lg btn-block btn-light btn-outline-secondary">Hủy nhiệm vụ</button>
+                  </ul>
+               </li>
+            </ul>
+         </li>
+      </div>
+   </nav>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="js/leaflet.rotatedMarker.js"></script>
+<script type="text/javascript" >
+   var img = new Image();
+   var socket = io(window.location.origin)
+   var point;
+   var config;
+   var flag = false;
+   var selectID
+   // Đối tượng để lưu trữ các biểu tượng AGV trên bản đồ
+   var agvs = []
+   var agvMarkers = [];
+   //var ViewAGV = document.getElementById("tabAGV")
+   //img.src = 'Maps/Map3/map3.png';
+   //point = 'Maps/Map3/map3.json';
+   // Tạo bản đồ Leaflet
+   var map = L.map('map', {
+      crs: L.CRS.Simple,
+      minZoom: -2 // Điều chỉnh mức độ thu nhỏ tối thiểu nếu cần
+   });
+
+   // Tính toán tỷ lệ bản đồ và thiết lập kích thước ảnh
+   var bounds,scaler,customLatLng;
+
+   var customMarkerCoords;// = [1037, 477]; // Tọa độ của dấu '+'
+   //var cursorMarker = L.marker([0, 0]).addTo(map); // Marker để hiển thị tọa độ con trỏ chuột
+   // Định nghĩa biểu tượng tùy chỉnh
+   var customIcon = L.icon({
+      iconUrl: 'img/point.png', // Đường dẫn đến hình ảnh biểu tượng
+      iconSize: [38, 38], // Kích thước của biểu tượng, ví dụ: [width, height]
+      iconAnchor: [19, 38], // Điểm neo của biểu tượng, thường là nằm ở giữa dưới của biểu tượng
+      popupAnchor: [0, -38] // Điểm neo của cửa sổ pop-up, thường là ở giữa trên của biểu tượng
+   });
+   var car = L.icon({
+      iconUrl: 'images/logo/agv.png', // Đường dẫn đến hình ảnh biểu tượng
+      iconSize: [38, 65], // Kích thước của biểu tượng, ví dụ: [width, height]
+      iconAnchor: [19, 38], // Điểm neo của biểu tượng, thường là nằm ở giữa dưới của biểu tượng
+      popupAnchor: [0, -38] // Điểm neo của cửa sổ pop-up, thường là ở giữa trên của biểu tượng
+   })
+   socket.emit('Map')
+   socket.on('Errmap',function(){
+      alert('Không thể tải được bản đồ. Hãy kiểm tra lại')
+   })
+   socket.on('AGV',function(data){
+      document.getElementById('tabAGV').innerHTML = data
+      flag = true
+   })
+   socket.on('AGV_Propeties',function(data){
+      data.forEach(item =>{
+         var Agvview = document.getElementById('stt'+item.ID)
+         Agvview.textContent = item.Status
+         Agvview = document.getElementById('vol'+item.ID)
+         Agvview.textContent = item.vol
+         Agvview = document.getElementById('pin'+item.ID)
+         Agvview.textContent = item.Pin
+         Agvview = document.getElementById('postion'+item.ID)
+         Agvview.textContent = (item.Postion + ',' + item.Angle + '°')
+         Agvview = document.getElementById('ini'+item.ID)
+         Agvview.textContent = item.ini
+         Agvview = document.getElementById('speed'+item.ID)
+         Agvview.textContent = item.speed
+         Agvview = document.getElementById('point'+item.ID)
+         Agvview.textContent = item.point
+         Agvview = document.getElementById('lastpoint'+item.ID)
+         Agvview.textContent = item.lastpoint
+         var pos = item.Postion.replace(/[()]/g, '').split(',');
+         var agvMaket = agvMarkers[item.ID]
+         agvMaket.setLatLng([pos[1]/scaler + customMarkerCoords[1],pos[0]/scaler + customMarkerCoords[0]]);
+         agvMaket.setRotationAngle(-1 *(item.Angle - 90));
+         Agvview = document.getElementById('work'+item.ID)
+         Agvview.textContent = item.Task
+         Agvview = document.getElementById('working'+item.ID)
+         Agvview.textContent = item.Work
+         Agvview = document.getElementById('alert'+item.ID)
+         Agvview.textContent = item.Alert
+      })
+   })
+   socket.on('Car',function(data){
+      //console.log(data)
+      data.forEach(item => {
+         let agv = {
+            id:item,
+            lat:0,
+            lng:0,
+            angle:0
+         }
+         //console.log(item)
+         var agvMarker = L.marker([agv.lat, agv.lng], {icon: car, rotationAngle:(agv.angle + 90)}).addTo(map);
+         //agvMarker.setRotationAngle(40)
+         // Tạo popup cho biểu tượng AGV
+         var popupContent = "<b>AGV ID:</b> " + item;
+         agvMarker.bindPopup(popupContent);
+         // Sự kiện khi di chuột vào marker
+         agvMarker.on('mouseclick', function (e) {
+            this.openPopup();
+         });
+         // Lưu trữ biểu tượng AGV trong đối tượng agvMarkers
+         agvMarkers[item] = agvMarker;
+         //agvs.push(agv)
+      })
+      //console.log(data)
+   })
+   socket.on('Map', function(data) {
+      console.log(data);
+      img.src = data.map;
+      point = data.point;
+      config = data.config;
+      console.log(config);
+      console.log(point);
+      //customMarkerCoords = config.zero; // Lấy tọa độ customMarkerCoords từ config
+      scaler = config.scaler;
+
+      img.onload = async function() {
+         // Kích thước thực của ảnh
+         var imageWidth = img.width;
+         var imageHeight = img.height;
+
+         // Tạo overlay hình ảnh trên bản đồ
+         var mapBounds = [[0, 0], [imageHeight, imageWidth]];
+         L.imageOverlay(img.src, mapBounds).addTo(map);
+
+         // Đặt tâm và phóng to để lấp đầy kích thước của ảnh
+         map.fitBounds(mapBounds);
+
+         try {
+               // Fetch dữ liệu từ URL config
+               const configResponse = await fetch(config);
+               const configData = await configResponse.json();
+               customMarkerCoords = configData.zero;
+               console.log(customMarkerCoords)
+                // Thêm điểm customMarkerCoords vào bản đồ
+               var customMarker = L.marker([customMarkerCoords[1], customMarkerCoords[0]], {icon: customIcon}).addTo(map);
+               scaler = configData.scaler;
+
+               // Fetch dữ liệu từ URL point
+               const pointResponse = await fetch(point);
+               const pointData = await pointResponse.json();
+
+               // Lặp qua từng điểm trong dữ liệu JSON
+               pointData.forEach(item => {
+                  // Tách tọa độ từ chuỗi Position
+                  var position = item.Position.split(',');
+                  var lat = parseFloat(position[1]) / scaler + customMarkerCoords[1];
+                  var lng = parseFloat(position[0]) / scaler + customMarkerCoords[0];
+
+                  // Tạo marker tại tọa độ và thêm vào bản đồ
+                  var marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
+
+                  // Tạo nội dung popup
+                  var popupContent = '<b>ID:</b> ' + item.ID + '<br>';
+                  popupContent += '<b>' + item.jog + '</b>';
+
+                  // Thêm sự kiện khi di chuột vào marker để hiển thị popup
+                  marker.bindPopup(popupContent);
+
+                  // Sự kiện khi di chuột vào marker
+                  marker.on('click', function(e) {
+                     this.openPopup();
+                  });
+               });
+         } catch (error) {
+               console.error('Error fetching data:', error);
+         }
+
+         // Gửi sự kiện AGV cho server socket
+         socket.emit('AGV');
+      };
+   });
+
+   socket.on('nhiemvu',function(data){
+      var element = document.getElementById("workspace")
+      //console.log(data)
+      //console.log(element)
+      //element.append(data)
+      element.insertAdjacentHTML('beforeend', data);
+   })
+   socket.on('update-task',function(data){
+      var workspaceElement = document.getElementById("nvu-dc");
+      workspaceElement.innerHTML = ''
+      workspaceElement.innerHTML = data
+   })
+   function closeTask() {
+      var workspaceElement = document.getElementById("workspace");
+      
+      var element = document.getElementById("task");
+      // Kiểm tra nếu phần tử "work" tồn tại trong "workspace"
+      if (element) {
+         workspaceElement.removeChild(element); // Xóa phần tử "work" khỏi "workspace"
+      }
+   }
+   // Hàm để kiểm tra và thực hiện gửi yêu cầu bản tin AGV nếu cờ đã được bật
+   function pos(obj){
+      //console.log('leave '+ obj.id)
+      socket.emit('control',obj.id)
+   }
+   function selec(obj){
+      //console.log(obj)
+      var cells = obj.getElementsByTagName("th");
+      selectID = obj.id
+      var rowData = [];
+      for (var j = 0; j < cells.length; j++) {
+            rowData.push(cells[j].textContent);
+      }
+      //console.log(rowData)
+      var Agvview = document.getElementById("notice-nv")
+      Agvview.value = rowData[1]
+      Agvview = document.getElementById("end-point")
+      var options = Agvview.options;
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].text === rowData[5]) {
+            options[i].selected = true;
+            break;
+        }
+      }
+      Agvview = document.getElementById("propety")
+      options = Agvview.options;
+      for (var i = 0; i < options.length; i++) {
+        if (options[i].text === rowData[4]) {
+            options[i].selected = true;
+            break;
+        }
+      }
+      Agvview = document.getElementById("txtTime")
+      console.log(rowData)
+      Agvview.value = rowData[2]
+   }
+   function time_now(){
+      var currentTime = new Date();
+
+      // Sử dụng các phương thức của đối tượng Date để lấy giờ, phút và giây
+      var currentHour = currentTime.getHours().toString().padStart(2, '0');
+      var currentMinute = currentTime.getMinutes().toString().padStart(2, '0');
+      var currentSecond = currentTime.getSeconds().toString().padStart(2, '0');
+
+      // Tạo chuỗi thời gian được định dạng dưới dạng "hh:mm:ss"
+      return `${currentHour}:${currentMinute}:${currentSecond}`;
+   }
+   function secsion(obj){
+      // lấy nội dung, lấy thời gian,trạng thái đang chờ, lấy mức ưu tiên, lấy điểm đến, lấy giờ hiện tại, lấy user
+      let rowData = {
+         id: '',
+         secsion: '',
+         idagv: '',
+         notice: '',
+         txtTime: '', // Thay 'txt-time' thành 'txtTime'
+         status: '',
+         propety: '',
+         endPoint: '', // Thay 'end-point' thành 'endPoint'
+         timeNow: '', // Thay 'time-now' thành 'timeNow'
+         user: ''
+      }
+      rowData.id = selectID
+      rowData.secsion = obj.id;
+      var Agvview = document.getElementById("notice-nv");
+      rowData.notice = Agvview.value
+      if (!Agvview.value) {
+         alert('Chưa có thông tin nhiệm vụ!');
+         return;
+      }
+      Agvview = document.getElementById("id-agv");
+      rowData.idagv = Agvview.textContent
+      Agvview = document.getElementById("txtTime");
+      if (!Agvview.value) {
+         alert('Chưa có thời gian nhiệm vụ!');
+         return;
+      }
+      rowData.txtTime = Agvview.value;
+      rowData.status = 'Đang chờ';
+      Agvview = document.getElementById("propety");
+
+      if (!Agvview.value) {
+         alert('Mức độ ưu tiên chưa xác định!');
+         return;
+      }
+      rowData.propety = Agvview.options[Agvview.value].text;
+      Agvview = document.getElementById("end-point");
+      if (!Agvview.value) {
+         alert('Vui lòng lựa chọn điểm đến!');
+         return;
+      }
+      rowData.endPoint = Agvview.options[Agvview.value].text;
+      rowData.timeNow = time_now();
+      Agvview = document.getElementById("name_user");
+      rowData.user = Agvview.textContent;
+      console.log(rowData);
+      let confirmResult
+      switch(rowData.secsion){
+         case 'secsion-add':
+            confirmResult = confirm("Thao tác sẽ thêm 1 nhiệm vụ cho xe AGV " + rowData.idagv + ". Bạn có chắc chắn?");
+            break
+         case 'secsion-replace':
+            confirmResult = confirm("Thao tác sẽ thay đổi thông tin nhiệm vụ đã lên lịch cho xe AGV " + rowData.idagv + ". Bạn có chắc chắn?");
+            break
+         case 'secsion-delete':
+            confirmResult = confirm("Thao tác sẽ xóa nhiệm vụ đã lên lịch cho xe AGV " + rowData.idagv + ". Bạn có chắc chắn?");
+            break
+         default:
+            console.log('error')
+            break
+      }
+         
+      if (confirmResult) {
+         console.log(rowData)
+         // Nếu người dùng đồng ý, thực hiện socket.emit
+         socket.emit('secsion', rowData);
+      } else {
+         // Nếu người dùng từ chối, không làm gì cả hoặc thực hiện hành động khác
+         // Ví dụ: alert("Hành động đã bị hủy bỏ!");
+      }
+   }
+   function convertTo24Hour(time12h) {
+      // Tách giờ, phút và giây từ chuỗi thời gian
+      var time = time12h.split(":");
+      var hour = parseInt(time[0]);
+      var minute = parseInt(time[1]);
+      var second = parseInt(time[2]);
+      // Kiểm tra xem là AM hay PM
+      var isPM = time[3].toUpperCase() === "PM";
+
+      // Nếu là PM và không phải là 12 giờ thì cộng thêm 12 để chuyển đổi sang định dạng 24 giờ
+      if (isPM && hour !== 12) {
+         hour += 12;
+      }
+      // Nếu là AM và là 12 giờ thì giảm đi 12 để chuyển đổi sang định dạng 24 giờ
+      if (!isPM && hour === 12) {
+         hour -= 12;
+      }
+
+      // Định dạng lại giờ để có hai chữ số
+      hour = hour < 10 ? "0" + hour : hour;
+      // Trả về thời gian trong định dạng 24 giờ
+      return hour + ":" + (minute < 10 ? "0" + minute : minute) + ":" + (second < 10 ? "0" + second : second);
+   }
+   function convertTo12Hour(time24h) {
+      // Tách giờ, phút và giây từ chuỗi thời gian
+      var time = time24h.split(":");
+      var hour = parseInt(time[0]);
+      var minute = time[1];
+      var second = time[2];
+
+      // Xác định nếu là AM hay PM
+      var period = (hour < 12) ? "AM" : "PM";
+
+      // Chuyển đổi giờ sang định dạng 12 giờ
+      hour = (hour > 12) ? (hour - 12) : hour;
+      // Nếu giờ là 0, chuyển thành 12 AM
+      hour = (hour == 0) ? 12 : hour;
+
+      // Định dạng lại giờ để có hai chữ số
+      hour = hour < 10 ? "0" + hour : hour;
+
+      // Trả về thời gian trong định dạng 12 giờ
+      return hour + ":" + minute + ":" + second ;
+   }  
+   setInterval(() => {
+      console.log('get infor')
+      if (flag) {
+         socket.emit('propeties');
+         }
+   }, 1000);
+</script>
